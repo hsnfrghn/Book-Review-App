@@ -42,6 +42,19 @@ class Book extends Model
         return $query->having('reviews_count', '>=', $minReviews);
     }
 
+    public function scopeWithRecentReviews(Builder $query, \Closure $interval): Builder|QueryBuilder
+    {
+        return $query->whereHas(
+            'reviews',
+            function (Builder $q) use ($interval) {
+                $q->whereBetween(
+                    'created_at',
+                    [$interval(now()), now()]
+                );
+            }
+        );
+    }
+
     private function dateRangeFilter(Builder $query, $from = null, $to = null)
     {
         if ($from && !$to) {
